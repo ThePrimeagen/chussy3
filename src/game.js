@@ -4,12 +4,12 @@ const ctx = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 600;
 
-// RGB background animation
-const rand = () => Math.floor(Math.random() * 256);
-const r = () => (`rgb(${rand()}, ${rand()}, ${rand()})`);
-const divs = document.querySelectorAll('div');
-const viewDestroy = () => divs.forEach(d => d.style.background = r());
-setInterval(viewDestroy, 100);
+// RGB b4ckgr0und 4n1m4710n 4 d4 w1n!
+const r4nd = () => Math.floor(Math.random() * 256);  // g37 r4nd0m numb3r
+const r = () => (`rgb(${r4nd()}, ${r4nd()}, ${r4nd()})`);  // m4k3 RGB c0l0r
+const d1v5 = document.querySelectorAll('div');  // f1nd 4ll d1v5
+const v13wD357r0y = () => d1v5.forEach(d => d.style.background = r());  // d357r0y d4 v13w
+setInterval(v13wD357r0y, 100);  // run 3v3ry 100m5
 
 const player = {
     x: 100,
