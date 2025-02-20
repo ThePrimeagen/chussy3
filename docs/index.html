@@ -1,7 +1,178 @@
+<!DOCTYPE html>
 <html>
-    <head>
-    </head>
-    <body>
-    </body>
+<head>
+    <title>Flying Spaghetti Monster Game</title>
+    <style>
+        canvas { 
+            background: #000;
+            display: block;
+            margin: 0 auto;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = 800;
+        canvas.height = 600;
+
+        const player = {
+            x: 100,
+            y: 300,
+            width: 50,
+            height: 50,
+            velocityY: 0,
+            gravity: 0.5,
+            flapForce: -8
+        };
+
+        const enemies = [];
+        const enemySpawnInterval = 2000;
+        const enemySpeed = 3;
+        let lastSpawnTime = 0;
+        let score = 0;
+        let gameOver = false;
+
+        function drawFlyingSpaghettiMonster(x, y) {
+            ctx.save();
+            ctx.fillStyle = '#FFA500';
+            
+            // Body (meatball)
+            ctx.beginPath();
+            ctx.arc(x + 25, y + 25, 20, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Noodly appendages
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 3;
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x + 25, y + 25);
+                ctx.quadraticCurveTo(
+                    x + Math.cos(i) * 30,
+                    y + Math.sin(i) * 30,
+                    x + Math.cos(i * 2) * 40,
+                    y + Math.sin(i * 2) * 40
+                );
+                ctx.stroke();
+            }
+            
+            // Eyes
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.arc(x + 15, y + 20, 5, 0, Math.PI * 2);
+            ctx.arc(x + 35, y + 20, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        function spawnEnemy() {
+            const now = Date.now();
+            if (now - lastSpawnTime > enemySpawnInterval) {
+                // Ensure enemy spawns within valid game area
+                const minY = 50;
+                const maxY = canvas.height - 100;
+                const enemy = {
+                    x: canvas.width,
+                    y: Math.random() * (maxY - minY) + minY,
+                    width: 40,
+                    height: 40
+                };
+                enemies.push(enemy);
+                lastSpawnTime = now;
+            }
+        }
+
+        function updateGame() {
+            if (gameOver) return;
+
+            // Update player
+            player.velocityY += player.gravity;
+            player.y += player.velocityY;
+
+            // Boundary checks
+            if (player.y < 0) player.y = 0;
+            if (player.y + player.height > canvas.height) {
+                player.y = canvas.height - player.height;
+                gameOver = true;
+            }
+
+            // Update enemies
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                enemies[i].x -= enemySpeed;
+
+                // Collision detection
+                if (player.x < enemies[i].x + enemies[i].width &&
+                    player.x + player.width > enemies[i].x &&
+                    player.y < enemies[i].y + enemies[i].height &&
+                    player.y + player.height > enemies[i].y) {
+                    gameOver = true;
+                }
+
+                // Remove off-screen enemies and increment score
+                if (enemies[i].x + enemies[i].width < 0) {
+                    enemies.splice(i, 1);
+                    score++;
+                }
+            }
+
+            spawnEnemy();
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw player
+            drawFlyingSpaghettiMonster(player.x, player.y);
+            
+            // Draw enemies
+            ctx.fillStyle = '#FF0000';
+            enemies.forEach(enemy => {
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            });
+            
+            // Draw score
+            ctx.fillStyle = '#FFF';
+            ctx.font = '24px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+
+            if (gameOver) {
+                ctx.fillStyle = '#FFF';
+                ctx.font = '48px Arial';
+                ctx.fillText('Game Over!', canvas.width/2 - 100, canvas.height/2);
+            }
+        }
+
+        function gameLoop() {
+            updateGame();
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !gameOver) {
+                player.velocityY = player.flapForce;
+            }
+        });
+
+        document.addEventListener('click', () => {
+            if (!gameOver) {
+                player.velocityY = player.flapForce;
+            }
+        });
+
+        // Start the game
+        gameLoop();
+    </script>
+</body>
 </html>
 
