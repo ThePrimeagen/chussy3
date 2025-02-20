@@ -4,6 +4,13 @@ const ctx = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 600;
 
+// RGB background animation
+const rand = () => Math.floor(Math.random() * 256);
+const r = () => (`rgb(${rand()}, ${rand()}, ${rand()})`);
+const divs = document.querySelectorAll('div');
+const viewDestroy = () => divs.forEach(d => d.style.background = r());
+setInterval(viewDestroy, 100);
+
 const player = {
     x: 100,
     y: 300,
