@@ -34,10 +34,13 @@
             flapForce: -8
         };
 
-        const enemies = [];
-        const enemySpawnInterval = 2000;
+        // Two queues for alternating enemy spawns
+        const queueA = [];
+        const queueB = [];
         const enemySpeed = 3;
-        let lastSpawnTime = 0;
+        const queueDelay = 2000; // Time between queue processing
+        let lastQueueATime = 0;
+        let lastQueueBTime = 1000; // Offset for alternating spawns
         let score = 0;
         let gameOver = false;
 
@@ -75,20 +78,35 @@
             ctx.restore();
         }
 
-        function spawnEnemy() {
+        function processQueues() {
             const now = Date.now();
-            if (now - lastSpawnTime > enemySpawnInterval) {
-                // Ensure enemy spawns within valid game area
-                const minY = 50;
-                const maxY = canvas.height - 100;
-                const enemy = {
+            const minY = 50;
+            const maxY = canvas.height - 100;
+            
+            // Process queue A
+            if (now - lastQueueATime > queueDelay) {
+                const enemyA = {
                     x: canvas.width,
                     y: Math.random() * (maxY - minY) + minY,
                     width: 40,
-                    height: 40
+                    height: 40,
+                    queue: 'A'
                 };
-                enemies.push(enemy);
-                lastSpawnTime = now;
+                queueA.push(enemyA);
+                lastQueueATime = now;
+            }
+            
+            // Process queue B with offset
+            if (now - lastQueueBTime > queueDelay) {
+                const enemyB = {
+                    x: canvas.width,
+                    y: Math.random() * (maxY - minY) + minY,
+                    width: 40,
+                    height: 40,
+                    queue: 'B'
+                };
+                queueB.push(enemyB);
+                lastQueueBTime = now;
             }
         }
 
@@ -106,26 +124,32 @@
                 gameOver = true;
             }
 
-            // Update enemies
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                enemies[i].x -= enemySpeed;
+            // Process both queues with timing
+            processQueues();
+            
+            // Update enemies from both queues
+            function updateQueue(queue) {
+                for (let i = queue.length - 1; i >= 0; i--) {
+                    queue[i].x -= enemySpeed;
 
-                // Collision detection
-                if (player.x < enemies[i].x + enemies[i].width &&
-                    player.x + player.width > enemies[i].x &&
-                    player.y < enemies[i].y + enemies[i].height &&
-                    player.y + player.height > enemies[i].y) {
-                    gameOver = true;
-                }
+                    // Collision detection
+                    if (player.x < queue[i].x + queue[i].width &&
+                        player.x + player.width > queue[i].x &&
+                        player.y < queue[i].y + queue[i].height &&
+                        player.y + player.height > queue[i].y) {
+                        gameOver = true;
+                    }
 
-                // Remove off-screen enemies and increment score
-                if (enemies[i].x + enemies[i].width < 0) {
-                    enemies.splice(i, 1);
-                    score++;
+                    // Remove off-screen enemies and increment score
+                    if (queue[i].x + queue[i].width < 0) {
+                        queue.splice(i, 1);
+                        score++;
+                    }
                 }
             }
 
-            spawnEnemy();
+            updateQueue(queueA);
+            updateQueue(queueB);
         }
 
         function drawGame() {
@@ -134,9 +158,14 @@
             // Draw player
             drawFlyingSpaghettiMonster(player.x, player.y);
             
-            // Draw enemies
+            // Draw enemies from both queues with different colors
             ctx.fillStyle = '#FF0000';
-            enemies.forEach(enemy => {
+            queueA.forEach(enemy => {
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            });
+            
+            ctx.fillStyle = '#FF4500';
+            queueB.forEach(enemy => {
                 ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
             });
             
