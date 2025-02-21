@@ -209,7 +209,15 @@ function updateGame() {
     // Apply gravity and enforce screen bounds
     player.velocityY += GRAVITY;
     player.y += player.velocityY;
+    
+    // Enforce horizontal bounds
     player.x = Math.max(MIN_X, Math.min(MAX_X, player.x));
+    
+    // Enforce vertical bounds and prevent yeeting into space
+    if (player.y < 0) {
+        player.y = 0;
+        player.velocityY = 0;
+    }
 
     // Ground collision
     if (player.y + player.height > canvas.height - 100) {
