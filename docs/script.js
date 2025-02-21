@@ -275,8 +275,14 @@ function updateGame() {
             player.x + player.width > obstacle.x &&
             player.y < obstacle.y + obstacle.height &&
             player.y + player.height > obstacle.y) {
-            gameOver = true;
-            audio.playCollision();
+            if (player.autoplay) {
+                // In autoplay, just reset the game
+                resetGame();
+                isPaused = false;  // Continue playing
+            } else {
+                gameOver = true;
+                audio.playCollision();
+            }
         }
     });
 
