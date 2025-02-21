@@ -327,7 +327,8 @@ function drawGame() {
         ctx.fillText('Press P to Pause/Unpause', canvas.width/2 - 120, canvas.height/2 + 40);
     }
 
-    if (gameOver) {
+    if (gameOver && !player.autoplay) {
+        // Only show game over screen in manual play
         ctx.fillStyle = '#FFF';
         ctx.font = '48px Arial';
         ctx.fillText('Game Over!', canvas.width/2 - 100, canvas.height/2);
