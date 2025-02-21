@@ -131,16 +131,22 @@ class AudioManager {
         this.gainNode.gain.value = value;
         this.b455_g41n.gain.setValueAtTime(value * 0.3, this.context.currentTime);
         this.l34d_g41n.gain.setValueAtTime(value * 0.2, this.context.currentTime);
+        localStorage.setItem('gameVolume', value.toString());
     }
 }
 
 const audio = new AudioManager();
 
+// Initialize volume control with saved value or default to muted
+const savedVolume = localStorage.getItem('gameVolume') || '0';
+document.getElementById('volumeSlider').value = savedVolume;
+audio.setVolume(parseFloat(savedVolume));
+
 // Initialize volume control
 document.getElementById('volumeSlider').addEventListener('input', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    audio.setVolume(e.target.value);
+    audio.setVolume(parseFloat(e.target.value));
 });
 
 function drawFlyingSpaghettiMonster(x, y) {
