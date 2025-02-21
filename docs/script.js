@@ -318,11 +318,6 @@ function drawGame() {
 }
 
 function gameLoop() {
-    // Start with autoplay enabled
-    if (!gameOver && !isPaused) {
-        player.autoplay = true;
-    }
-    
     updateGame();
     drawGame();
     requestAnimationFrame(gameLoop);
