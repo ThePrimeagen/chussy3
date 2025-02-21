@@ -7,16 +7,38 @@
             background: #000;
             display: block;
             margin: 0 auto;
+            margin-bottom: 60px;
         }
         body {
             margin: 0;
             padding: 0;
             background: #333;
         }
+        .terminal-ad {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #1a1a1a;
+            color: #00ff00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-size: 24px;
+            border-top: 2px solid #00ff00;
+            text-decoration: none;
+            cursor: pointer;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+    <a href="https://terminal.shop" class="terminal-ad" target="_blank">
+        $ sudo apt-get install terminal.shop
+    </a>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
