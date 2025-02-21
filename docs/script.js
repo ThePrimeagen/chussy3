@@ -26,6 +26,85 @@ const ctx = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 600;
 
+// Initialize audio
+class AudioManager {
+    constructor() {
+        this.context = new (window.AudioContext || window.webkitAudioContext)();
+        this.context.suspend();
+        this.gainNode = this.context.createGain();
+        this.gainNode.connect(this.context.destination);
+    }
+
+    playFlap() {
+        const osc = this.context.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, this.context.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, this.context.currentTime + 0.1);
+        osc.connect(this.gainNode);
+        osc.start();
+        osc.stop(this.context.currentTime + 0.1);
+    }
+
+    playCollision() {
+        const osc = this.context.createOscillator();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(200, this.context.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, this.context.currentTime + 0.3);
+        osc.connect(this.gainNode);
+        osc.start();
+        osc.stop(this.context.currentTime + 0.3);
+    }
+
+    playScore() {
+        const osc = this.context.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, this.context.currentTime);
+        osc.connect(this.gainNode);
+        osc.start();
+        osc.stop(this.context.currentTime + 0.05);
+    }
+
+    resume() {
+        this.context.resume();
+    }
+}
+
+const audio = new AudioManager();
+
+function drawFlyingSpaghettiMonster(x, y) {
+    ctx.save();
+    ctx.fillStyle = '#FFA500';
+    
+    // Body (meatball)
+    ctx.beginPath();
+    ctx.arc(x + 25, y + 25, 20, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Noodly appendages
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 6; i++) {
+        ctx.beginPath();
+        ctx.moveTo(x + 25, y + 25);
+        ctx.quadraticCurveTo(
+            x + Math.cos(i) * 30,
+            y + Math.sin(i) * 30,
+            x + Math.cos(i * 2) * 40,
+            y + Math.sin(i * 2) * 40
+        );
+        ctx.stroke();
+    }
+    
+    // Eyes
+    ctx.fillStyle = '#FFF';
+    ctx.beginPath();
+    ctx.arc(x + 15, y + 20, 5, 0, Math.PI * 2);
+    ctx.arc(x + 35, y + 20, 5, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+}
+
 function shouldFlap() {
     if (queueA.length === 0 && queueB.length === 0) return false;
     
