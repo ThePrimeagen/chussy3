@@ -190,14 +190,28 @@ function drawFlyingSpaghettiMonster(x, y) {
 function shouldFlap() {
     if (queueA.length === 0 && queueB.length === 0) return false;
     
-    const nextObstacle = [...queueA, ...queueB]
+    const obstacles = [...queueA, ...queueB]
         .filter(obs => obs.x > player.x)
-        .sort((a, b) => a.x - b.x)[0];
+        .sort((a, b) => a.x - b.x);
     
-    if (!nextObstacle) return false;
+    if (obstacles.length === 0) return false;
     
+    const nextObstacle = obstacles[0];
     const horizontalDistance = nextObstacle.x - (player.x + player.width);
-    return horizontalDistance <= 200 && player.velocityY > -2;
+    const timeToObstacle = horizontalDistance / MOVE_SPEED;
+    
+    // Calculate predicted position using physics
+    const predictedY = player.y + 
+        player.velocityY * timeToObstacle + 
+        0.5 * GRAVITY * timeToObstacle * timeToObstacle;
+    
+    // Flap if predicted collision or too close to edges
+    return (horizontalDistance <= 200 && (
+        predictedY + player.height > nextObstacle.y ||
+        predictedY < nextObstacle.y - 100 ||
+        predictedY > canvas.height - 150 ||
+        predictedY < 50
+    ));
 }
 
 function updateGame() {
@@ -272,8 +286,14 @@ function updateGame() {
             player.x + player.width > obstacle.x &&
             player.y < obstacle.y + obstacle.height &&
             player.y + player.height > obstacle.y) {
-            gameOver = true;
-            audio.playCollision();
+            if (player.autoplay) {
+                // In autoplay, just reset the game
+                resetGame();
+                isPaused = false;  // Continue playing
+            } else {
+                gameOver = true;
+                audio.playCollision();
+            }
         }
     });
 
@@ -317,7 +337,8 @@ function drawGame() {
         ctx.fillText('Press P to Pause/Unpause', canvas.width/2 - 120, canvas.height/2 + 40);
     }
 
-    if (gameOver) {
+    if (gameOver && !player.autoplay) {
+        // Only show game over screen in manual play
         ctx.fillStyle = '#FFF';
         ctx.font = '48px Arial';
         ctx.fillText('Game Over!', canvas.width/2 - 100, canvas.height/2);
@@ -328,11 +349,6 @@ function drawGame() {
 }
 
 function gameLoop() {
-    // Start with autoplay enabled
-    if (!gameOver && !isPaused) {
-        player.autoplay = true;
-    }
-    
     updateGame();
     drawGame();
     requestAnimationFrame(gameLoop);
@@ -350,9 +366,6 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.code === 'KeyP') {
         isPaused = !isPaused;
-        if (!isPaused) {
-            player.autoplay = true;  // Re-enable autoplay when unpausing manually
-        }
     }
 });
 
