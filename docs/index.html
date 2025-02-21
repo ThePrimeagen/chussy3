@@ -3,6 +3,15 @@
 <head>
     <title>Flying Spaghetti Monster Game</title>
     <style>
+        .volume-control {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+        }
         canvas { 
             background: #000;
             display: block;
@@ -35,8 +44,11 @@
     </style>
 </head>
 <body>
+    <div class="volume-control">
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
+    </div>
     <canvas id="gameCanvas"></canvas>
-    <a href="https://terminal.shop" class="terminal-ad" target="_blank">
+    <a href="https://terminal.shop"class="terminal-ad" target="_blank">
         $ sudo apt-get install terminal.shop
     </a>
     <script src="script.js"></script>
