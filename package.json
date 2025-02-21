@@ -8,8 +8,7 @@
   },
   "scripts": {
     "test": "echo 'loser'",
-    "lint": "echo 'loser'",
-    "test:headless": "node docs/test.js"
+    "lint": "echo 'loser'"
   },
   "repository": {
     "type": "git",
@@ -21,8 +20,5 @@
   "bugs": {
     "url": "https://github.com/ThePrimeagen/chussy3/issues"
   },
-  "homepage": "https://github.com/ThePrimeagen/chussy3#readme",
-  "devDependencies": {
-    "puppeteer": "^24.2.1"
-  }
+  "homepage": "https://github.com/ThePrimeagen/chussy3#readme"
 }
