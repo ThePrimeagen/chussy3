@@ -160,6 +160,7 @@ function updateGame() {
             player.y < obstacle.y + obstacle.height &&
             player.y + player.height > obstacle.y) {
             gameOver = true;
+            audio.playCollision();
         }
     });
 
@@ -168,6 +169,9 @@ function updateGame() {
 
     // Update score
     score++;
+    if (score % 10 === 0) {  // Play every 10 points
+        audio.playScore();
+    }
 }
 
 function drawGame() {
@@ -225,6 +229,8 @@ document.addEventListener('keydown', (e) => {
         isPaused = false;
         player.autoplay = false;  // User takes control
         player.velocityY = FLAP_FORCE;
+        audio.resume();
+        audio.playFlap();
     }
     if (e.code === 'KeyP') {
         isPaused = !isPaused;
@@ -240,6 +246,8 @@ document.addEventListener('click', () => {
         isPaused = false;
         player.autoplay = false;  // User takes control
         player.velocityY = FLAP_FORCE;
+        audio.resume();
+        audio.playFlap();
     }
 });
 
