@@ -282,7 +282,7 @@ function updateGame() {
     // Update score and expose it for procedural music
     score++;
     window.score = score;
-    if (score % 10 === 0) {  // Play every 10 points
+    if (score % 100 === 0) {  // Play every 100 points as commanded
         audio.playScore();
     }
 }
