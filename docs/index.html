@@ -12,11 +12,20 @@
             border-radius: 5px;
             z-index: 100;
         }
+        @keyframes rainbow_vibes {
+            0% { background: #ff0000; }
+            16.666% { background: #ff8800; }
+            33.333% { background: #ffff00; }
+            50% { background: #00ff00; }
+            66.666% { background: #0088ff; }
+            83.333% { background: #8800ff; }
+            100% { background: #ff0000; }
+        }
         canvas { 
-            background: #000;
             display: block;
             margin: 0 auto;
             margin-bottom: 60px;
+            animation: rainbow_vibes 8s linear infinite;
         }
         body {
             margin: 0;
