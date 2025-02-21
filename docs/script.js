@@ -129,6 +129,11 @@ function drawGame() {
 }
 
 function gameLoop() {
+    // Start with autoplay enabled
+    if (!gameOver && !isPaused) {
+        player.autoplay = true;
+    }
+    
     updateGame();
     drawGame();
     requestAnimationFrame(gameLoop);
@@ -139,10 +144,14 @@ document.addEventListener('keydown', (e) => {
     lastInputTime = Date.now();
     if (e.code === 'Space' && !gameOver) {
         isPaused = false;
+        player.autoplay = false;  // User takes control
         player.velocityY = FLAP_FORCE;
     }
     if (e.code === 'KeyP') {
         isPaused = !isPaused;
+        if (!isPaused) {
+            player.autoplay = true;  // Re-enable autoplay when unpausing manually
+        }
     }
 });
 
@@ -150,6 +159,7 @@ document.addEventListener('click', () => {
     lastInputTime = Date.now();
     if (!gameOver) {
         isPaused = false;
+        player.autoplay = false;  // User takes control
         player.velocityY = FLAP_FORCE;
     }
 });
@@ -158,12 +168,15 @@ function resetGame() {
     player.x = 100;
     player.y = 300;
     player.velocityY = 0;
+    player.autoplay = true;  // Reset with autoplay enabled
     queueA.length = 0;
     queueB.length = 0;
     gameOver = false;
+    isPaused = true;  // Start paused
     score = 0;
     lastQueueATime = 0;
     lastQueueBTime = 1000;
+    lastInputTime = Date.now();  // Reset input timer for auto-unpause
 }
 
 // Start the game
