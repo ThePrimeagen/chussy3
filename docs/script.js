@@ -75,9 +75,18 @@ class AudioManager {
     resume() {
         this.context.resume();
     }
+
+    setVolume(value) {
+        this.gainNode.gain.value = value;
+    }
 }
 
 const audio = new AudioManager();
+
+// Initialize volume control
+document.getElementById('volumeSlider').addEventListener('input', (e) => {
+    audio.setVolume(e.target.value);
+});
 
 function drawFlyingSpaghettiMonster(x, y) {
     ctx.save();
