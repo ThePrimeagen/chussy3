@@ -85,6 +85,8 @@ const audio = new AudioManager();
 
 // Initialize volume control
 document.getElementById('volumeSlider').addEventListener('input', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     audio.setVolume(e.target.value);
 });
 
