@@ -19,6 +19,11 @@ const AUTO_UNPAUSE_DELAY = 10000;  // 10 seconds
 
 let gameOver = false;
 let score = 0;
+const queueA = [];
+const queueB = [];
+const MOVE_SPEED = 3;
+let lastQueueATime = 0;
+let lastQueueBTime = 1000;
 
 // Initialize canvas
 const canvas = document.getElementById('gameCanvas');
@@ -145,16 +150,38 @@ function updateGame() {
         player.isJumping = false;
     }
 
-    // Move obstacles
-    obstacles.forEach(obstacle => {
+    // Process queues
+    const now = Date.now();
+    if (now - lastQueueATime > QUEUE_DELAY) {
+        queueA.push({
+            x: canvas.width,
+            y: Math.random() * (canvas.height - 200) + 50,
+            width: 40,
+            height: 40
+        });
+        lastQueueATime = now;
+    }
+    if (now - lastQueueBTime > QUEUE_DELAY) {
+        queueB.push({
+            x: canvas.width,
+            y: Math.random() * (canvas.height - 200) + 50,
+            width: 40,
+            height: 40
+        });
+        lastQueueBTime = now;
+    }
+
+    // Move enemies
+    [...queueA, ...queueB].forEach(obstacle => {
         obstacle.x -= MOVE_SPEED;
     });
 
-    // Remove off-screen obstacles
-    obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
+    // Remove off-screen enemies
+    queueA.splice(0, queueA.findIndex(obs => obs.x + obs.width > 0));
+    queueB.splice(0, queueB.findIndex(obs => obs.x + obs.width > 0));
 
     // Collision detection
-    obstacles.forEach(obstacle => {
+    [...queueA, ...queueB].forEach(obstacle => {
         if (player.x < obstacle.x + obstacle.width &&
             player.x + player.width > obstacle.x &&
             player.y < obstacle.y + obstacle.height &&
@@ -164,8 +191,7 @@ function updateGame() {
         }
     });
 
-    // Spawn new obstacles
-    spawnObstacle();
+    // Score is updated automatically
 
     // Update score
     score++;
