@@ -303,6 +303,9 @@ function drawGame() {
         ctx.fillStyle = '#FFF';
         ctx.font = '48px Arial';
         ctx.fillText('Game Over!', canvas.width/2 - 100, canvas.height/2);
+        document.querySelector('.replay-btn').style.display = 'block';
+    } else {
+        document.querySelector('.replay-btn').style.display = 'none';
     }
 }
 
