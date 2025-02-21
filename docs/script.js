@@ -2,6 +2,9 @@
 const GRAVITY = 0.3;  // Reduced for longer air time
 const FLAP_FORCE = -8;
 const QUEUE_DELAY = 2000;
+const SCREEN_MARGIN = 50;  // Keep character away from edges
+const MIN_X = SCREEN_MARGIN;
+const MAX_X = 800 - SCREEN_MARGIN - 50;  // canvas.width - margin - player.width
 
 // Game state
 const player = {
@@ -139,9 +142,10 @@ function updateGame() {
         player.velocityY = FLAP_FORCE;
     }
 
-    // Apply gravity
+    // Apply gravity and enforce screen bounds
     player.velocityY += GRAVITY;
     player.y += player.velocityY;
+    player.x = Math.max(MIN_X, Math.min(MAX_X, player.x));
 
     // Ground collision
     if (player.y + player.height > canvas.height - 100) {
@@ -278,7 +282,7 @@ document.addEventListener('click', () => {
 });
 
 function resetGame() {
-    player.x = 100;
+    player.x = MIN_X;  // Start at left boundary
     player.y = 300;
     player.velocityY = 0;
     player.autoplay = true;  // Reset with autoplay enabled
