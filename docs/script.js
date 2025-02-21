@@ -10,7 +10,8 @@ let player = {
     width: 30,
     height: 30,
     velocityY: 0,
-    isJumping: false
+    isJumping: false,
+    autoplay: true
 };
 
 let obstacles = [];
@@ -37,8 +38,26 @@ function spawnObstacle() {
     }
 }
 
+function shouldJump() {
+    if (obstacles.length === 0) return false;
+    
+    const nextObstacle = obstacles.find(obs => obs.x + obs.width > player.x);
+    if (!nextObstacle) return false;
+
+    const horizontalDistance = nextObstacle.x - (player.x + player.width);
+    const jumpDistance = MOVE_SPEED * 15; // Approximate distance covered during a jump
+    
+    return horizontalDistance <= jumpDistance && horizontalDistance > 0;
+}
+
 function updateGame() {
     if (gameOver) return;
+
+    // Autoplay logic
+    if (player.autoplay && !player.isJumping && shouldJump()) {
+        player.velocityY = JUMP_FORCE;
+        player.isJumping = true;
+    }
 
     // Apply gravity
     player.velocityY += GRAVITY;
@@ -130,7 +149,8 @@ function resetGame() {
         width: 30,
         height: 30,
         velocityY: 0,
-        isJumping: false
+        isJumping: false,
+        autoplay: true
     };
     obstacles = [];
     gameOver = false;
