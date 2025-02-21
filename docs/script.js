@@ -145,33 +145,43 @@ document.getElementById('volumeSlider').addEventListener('input', (e) => {
 
 function drawFlyingSpaghettiMonster(x, y) {
     ctx.save();
-    ctx.fillStyle = '#FFA500';
     
-    // Body (meatball)
+    // Body color changes with score
+    const hue = (score * 2) % 360;
+    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+    
+    // Body size increases with score
+    const bodySize = 20 + Math.min(score / 100, 10);
     ctx.beginPath();
-    ctx.arc(x + 25, y + 25, 20, 0, Math.PI * 2);
+    ctx.arc(x + 25, y + 25, bodySize, 0, Math.PI * 2);
     ctx.fill();
     
     // Noodly appendages
-    ctx.strokeStyle = '#FFD700';
+    const noodleCount = 6 + Math.min(Math.floor(score / 50), 6);
+    ctx.strokeStyle = `hsl(${(hue + 30) % 360}, 100%, 50%)`;
     ctx.lineWidth = 3;
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < noodleCount; i++) {
+        const angle = (i / noodleCount) * Math.PI * 2;
+        const wiggle = Math.sin(Date.now() / 200 + i) * 10;
         ctx.beginPath();
         ctx.moveTo(x + 25, y + 25);
         ctx.quadraticCurveTo(
-            x + Math.cos(i) * 30,
-            y + Math.sin(i) * 30,
-            x + Math.cos(i * 2) * 40,
-            y + Math.sin(i * 2) * 40
+            x + Math.cos(angle) * (30 + wiggle),
+            y + Math.sin(angle) * (30 + wiggle),
+            x + Math.cos(angle * 2) * (40 + wiggle),
+            y + Math.sin(angle * 2) * (40 + wiggle)
         );
         ctx.stroke();
     }
     
-    // Eyes
+    // Eyes get angrier with score
+    const eyeAngle = Math.min(score / 200, 0.5);
     ctx.fillStyle = '#FFF';
     ctx.beginPath();
-    ctx.arc(x + 15, y + 20, 5, 0, Math.PI * 2);
-    ctx.arc(x + 35, y + 20, 5, 0, Math.PI * 2);
+    // Left eye
+    ctx.arc(x + 15, y + 20 - eyeAngle * 5, 5, 0, Math.PI * 2);
+    // Right eye
+    ctx.arc(x + 35, y + 20 - eyeAngle * 5, 5, 0, Math.PI * 2);
     ctx.fill();
     
     ctx.restore();
