@@ -190,37 +190,63 @@ function drawFlyingSpaghettiMonster(x, y) {
 function shouldFlap() {
     if (queueA.length === 0 && queueB.length === 0) return false;
     
+    // Get next 3 obstacles for pattern recognition
     const obstacles = [...queueA, ...queueB]
         .filter(obs => obs.x > player.x)
-        .sort((a, b) => a.x - b.x);
+        .sort((a, b) => a.x - b.x)
+        .slice(0, 3);
     
     if (obstacles.length === 0) return false;
     
     const nextObstacle = obstacles[0];
     const horizontalDistance = nextObstacle.x - (player.x + player.width);
+    
+    // Calculate optimal path considering multiple obstacles
     const timeToObstacle = horizontalDistance / MOVE_SPEED;
+    const numPredictions = 20; // Increased prediction points
+    const timeStep = timeToObstacle / numPredictions;
     
-    // Calculate predicted position using physics
-    const predictedY = player.y + 
-        player.velocityY * timeToObstacle + 
-        0.5 * GRAVITY * timeToObstacle * timeToObstacle;
+    let currentY = player.y;
+    let currentVelocity = player.velocityY;
+    let optimalPath = true;
     
-    // Flap if predicted collision or too close to edges
-    return (horizontalDistance <= 200 && (
-        predictedY + player.height > nextObstacle.y ||
-        predictedY < nextObstacle.y - 100 ||
-        predictedY > canvas.height - 150 ||
-        predictedY < 50
-    ));
+    // Simulate future positions for perfect trajectory
+    for (let i = 0; i < numPredictions; i++) {
+        currentY += currentVelocity * timeStep;
+        currentVelocity += GRAVITY * timeStep;
+        
+        // Check all visible obstacles
+        for (const obs of obstacles) {
+            const obsDistance = obs.x - (player.x + player.width);
+            if (obsDistance <= horizontalDistance * (i / numPredictions)) {
+                if (Math.abs(currentY - obs.y) < 100) {
+                    optimalPath = false;
+                    break;
+                }
+            }
+        }
+        
+        // Emergency bounds check with tighter margins
+        if (currentY > canvas.height - 120 || currentY < 30) {
+            optimalPath = false;
+            break;
+        }
+    }
+    
+    // Additional safety checks
+    if (player.y > canvas.height - 150 || player.y < 40) {
+        return true;
+    }
+    
+    return !optimalPath;
 }
 
 function updateGame() {
     if (gameOver) return;
     
-    // Check for auto-unpause after 10 seconds
-    if (isPaused && Date.now() - lastInputTime > AUTO_UNPAUSE_DELAY) {
+    // Only auto-unpause if we haven't had user input
+    if (isPaused && Date.now() - lastInputTime > AUTO_UNPAUSE_DELAY && player.autoplay) {
         isPaused = false;
-        player.autoplay = true;
     }
     
     if (isPaused) return;
@@ -280,16 +306,20 @@ function updateGame() {
     queueA.splice(0, queueA.findIndex(obs => obs.x + obs.width > 0));
     queueB.splice(0, queueB.findIndex(obs => obs.x + obs.width > 0));
 
-    // Collision detection
+    // Collision detection with improved autoplay handling
     [...queueA, ...queueB].forEach(obstacle => {
         if (player.x < obstacle.x + obstacle.width &&
             player.x + player.width > obstacle.x &&
             player.y < obstacle.y + obstacle.height &&
             player.y + player.height > obstacle.y) {
             if (player.autoplay) {
-                // In autoplay, just reset the game
-                resetGame();
-                isPaused = false;  // Continue playing
+                // In autoplay, reset game state without full reset
+                score = 0;
+                player.y = canvas.height / 2;
+                player.velocityY = 0;
+                queueA.length = 0;
+                queueB.length = 0;
+                isPaused = false;
             } else {
                 gameOver = true;
                 audio.playCollision();
@@ -309,6 +339,14 @@ function updateGame() {
 
 function drawGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grass details
+    ctx.fillStyle = '#228B22';  // Forest green
+    for (let i = 0; i < 50; i++) {
+        const x = (i * 20 + (Date.now() / 50) % 20) % canvas.width;
+        const height = 15 + Math.sin(x / 30) * 5;
+        ctx.fillRect(x, canvas.height - 100, 3, -height);
+    }
     
     // Draw player
     drawFlyingSpaghettiMonster(player.x, player.y);
