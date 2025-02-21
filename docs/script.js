@@ -202,6 +202,7 @@ function shouldFlap() {
         predictedY > canvas.height - 150 ||
         predictedY < 50
     ));
+}
 
 function updateGame() {
     if (gameOver) return;
