@@ -180,15 +180,28 @@ function drawFlyingSpaghettiMonster(x, y) {
 function shouldFlap() {
     if (queueA.length === 0 && queueB.length === 0) return false;
     
-    const nextObstacle = [...queueA, ...queueB]
+    const obstacles = [...queueA, ...queueB]
         .filter(obs => obs.x > player.x)
-        .sort((a, b) => a.x - b.x)[0];
+        .sort((a, b) => a.x - b.x);
     
-    if (!nextObstacle) return false;
+    if (obstacles.length === 0) return false;
     
+    const nextObstacle = obstacles[0];
     const horizontalDistance = nextObstacle.x - (player.x + player.width);
-    return horizontalDistance <= 200 && player.velocityY > -2;
-}
+    const timeToObstacle = horizontalDistance / MOVE_SPEED;
+    
+    // Calculate predicted position using physics
+    const predictedY = player.y + 
+        player.velocityY * timeToObstacle + 
+        0.5 * GRAVITY * timeToObstacle * timeToObstacle;
+    
+    // Flap if predicted collision or too close to edges
+    return (horizontalDistance <= 200 && (
+        predictedY + player.height > nextObstacle.y ||
+        predictedY < nextObstacle.y - 100 ||
+        predictedY > canvas.height - 150 ||
+        predictedY < 50
+    ));
 
 function updateGame() {
     if (gameOver) return;
