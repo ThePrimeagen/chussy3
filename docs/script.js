@@ -1,23 +1,24 @@
 // Game constants
-const GRAVITY = 0.8;
-const JUMP_FORCE = -12;
-const MOVE_SPEED = 5;
+const GRAVITY = 0.3;  // Reduced for longer air time
+const FLAP_FORCE = -8;
+const QUEUE_DELAY = 2000;
 
 // Game state
-let player = {
+const player = {
     x: 100,
     y: 300,
-    width: 30,
-    height: 30,
+    width: 50,
+    height: 50,
     velocityY: 0,
-    isJumping: false,
     autoplay: true
 };
 
-let obstacles = [];
+let isPaused = true;  // Start paused
+let lastInputTime = Date.now();
+const AUTO_UNPAUSE_DELAY = 10000;  // 10 seconds
+
 let gameOver = false;
 let score = 0;
-let lastObstacleSpawn = 0;
 
 // Initialize canvas
 const canvas = document.getElementById('gameCanvas');
@@ -25,38 +26,33 @@ const ctx = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 600;
 
-function spawnObstacle() {
-    const now = Date.now();
-    if (now - lastObstacleSpawn > 1500) {
-        obstacles.push({
-            x: canvas.width,
-            y: canvas.height - 100,
-            width: 30,
-            height: Math.random() * 150 + 50
-        });
-        lastObstacleSpawn = now;
-    }
-}
-
-function shouldJump() {
-    if (obstacles.length === 0) return false;
+function shouldFlap() {
+    if (queueA.length === 0 && queueB.length === 0) return false;
     
-    const nextObstacle = obstacles.find(obs => obs.x + obs.width > player.x);
+    const nextObstacle = [...queueA, ...queueB]
+        .filter(obs => obs.x > player.x)
+        .sort((a, b) => a.x - b.x)[0];
+    
     if (!nextObstacle) return false;
-
-    const horizontalDistance = nextObstacle.x - (player.x + player.width);
-    const jumpDistance = MOVE_SPEED * 15; // Approximate distance covered during a jump
     
-    return horizontalDistance <= jumpDistance && horizontalDistance > 0;
+    const horizontalDistance = nextObstacle.x - (player.x + player.width);
+    return horizontalDistance <= 200 && player.velocityY > -2;
 }
 
 function updateGame() {
     if (gameOver) return;
+    
+    // Check for auto-unpause after 10 seconds
+    if (isPaused && Date.now() - lastInputTime > AUTO_UNPAUSE_DELAY) {
+        isPaused = false;
+        player.autoplay = true;
+    }
+    
+    if (isPaused) return;
 
     // Autoplay logic
-    if (player.autoplay && !player.isJumping && shouldJump()) {
-        player.velocityY = JUMP_FORCE;
-        player.isJumping = true;
+    if (player.autoplay && shouldFlap()) {
+        player.velocityY = FLAP_FORCE;
     }
 
     // Apply gravity
@@ -96,30 +92,37 @@ function updateGame() {
 }
 
 function drawGame() {
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw ground
-    ctx.fillStyle = '#4CAF50';
-    ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
-
+    
     // Draw player
-    ctx.fillStyle = '#FF4444';
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-
-    // Draw obstacles
-    ctx.fillStyle = '#666666';
-    obstacles.forEach(obstacle => {
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    drawFlyingSpaghettiMonster(player.x, player.y);
+    
+    // Draw enemies from both queues with different colors
+    ctx.fillStyle = '#FF0000';
+    queueA.forEach(enemy => {
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
     });
-
-    // Draw score
-    ctx.fillStyle = '#FFFFFF';
+    
+    ctx.fillStyle = '#FF4500';
+    queueB.forEach(enemy => {
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    });
+    
+    // Draw score and pause status
+    ctx.fillStyle = '#FFF';
     ctx.font = '24px Arial';
-    ctx.fillText(`Score: ${Math.floor(score/10)}`, 10, 30);
+    ctx.fillText(`Score: ${score}`, 10, 30);
+    
+    if (isPaused) {
+        ctx.fillStyle = '#FFF';
+        ctx.font = '36px Arial';
+        ctx.fillText('PAUSED - Press SPACE or Click to Start', canvas.width/2 - 250, canvas.height/2);
+        ctx.font = '24px Arial';
+        ctx.fillText('Press P to Pause/Unpause', canvas.width/2 - 120, canvas.height/2 + 40);
+    }
 
     if (gameOver) {
-        ctx.fillStyle = '#FFFFFF';
+        ctx.fillStyle = '#FFF';
         ctx.font = '48px Arial';
         ctx.fillText('Game Over!', canvas.width/2 - 100, canvas.height/2);
     }
@@ -133,30 +136,35 @@ function gameLoop() {
 
 // Event listeners
 document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !player.isJumping && !gameOver) {
-        player.velocityY = JUMP_FORCE;
-        player.isJumping = true;
+    lastInputTime = Date.now();
+    if (e.code === 'Space' && !gameOver) {
+        isPaused = false;
+        player.velocityY = FLAP_FORCE;
     }
-    if (e.code === 'KeyR' && gameOver) {
-        resetGame();
+    if (e.code === 'KeyP') {
+        isPaused = !isPaused;
+    }
+});
+
+document.addEventListener('click', () => {
+    lastInputTime = Date.now();
+    if (!gameOver) {
+        isPaused = false;
+        player.velocityY = FLAP_FORCE;
     }
 });
 
 function resetGame() {
-    player = {
-        x: 100,
-        y: 300,
-        width: 30,
-        height: 30,
-        velocityY: 0,
-        isJumping: false,
-        autoplay: true
-    };
-    obstacles = [];
+    player.x = 100;
+    player.y = 300;
+    player.velocityY = 0;
+    queueA.length = 0;
+    queueB.length = 0;
     gameOver = false;
     score = 0;
-    lastObstacleSpawn = 0;
+    lastQueueATime = 0;
+    lastQueueBTime = 1000;
 }
 
-// Start game
+// Start the game
 gameLoop();
