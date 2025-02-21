@@ -41,6 +41,57 @@ class AudioManager {
         this.context.suspend();
         this.gainNode = this.context.createGain();
         this.gainNode.connect(this.context.destination);
+        
+        // 1n17 pr0c3dur4l mu51c
+        this.b455_05c = this.context.createOscillator();
+        this.b455_g41n = this.context.createGain();
+        this.l34d_05c = this.context.createOscillator();
+        this.l34d_g41n = this.context.createGain();
+        
+        // 53t up b455
+        this.b455_05c.type = 'triangle';
+        this.b455_05c.connect(this.b455_g41n);
+        this.b455_g41n.connect(this.gainNode);
+        this.b455_g41n.gain.setValueAtTime(0.3, this.context.currentTime);
+        
+        // 53t up l34d
+        this.l34d_05c.type = 'sawtooth';
+        this.l34d_05c.connect(this.l34d_g41n);
+        this.l34d_g41n.connect(this.gainNode);
+        this.l34d_g41n.gain.setValueAtTime(0.2, this.context.currentTime);
+        
+        // 1n17 n0735
+        const b455_n073 = 55; // A1
+        const l34d_n073 = 440; // A4
+        this.b455_05c.frequency.setValueAtTime(b455_n073, this.context.currentTime);
+        this.l34d_05c.frequency.setValueAtTime(l34d_n073, this.context.currentTime);
+        
+        // 574r7 pr0c3dur4l mu51c
+        this.b455_05c.start();
+        this.l34d_05c.start();
+        this._upd473_mu51c();
+    }
+    
+    _upd473_mu51c() {
+        const time = this.context.currentTime;
+        const score = window.score || 0;
+        
+        // B455 pr0gr3551on
+        const b455_n0735 = [55, 65, 73, 82]; // A1, C2, D2, E2
+        const b455_1dx = Math.floor(score / 10) % b455_n0735.length;
+        const b455_n073 = b455_n0735[b455_1dx];
+        
+        // L34d pr0gr3551on
+        const l34d_n0735 = [440, 523, 587, 659]; // A4, C5, D5, E5
+        const l34d_1dx = Math.floor(score / 5) % l34d_n0735.length;
+        const l34d_n073 = l34d_n0735[l34d_1dx];
+        
+        // 4pply ch4ng35
+        this.b455_05c.frequency.setValueAtTime(b455_n073, time);
+        this.l34d_05c.frequency.setValueAtTime(l34d_n073, time);
+        
+        // 5ch3dul3 n3x7 upd473
+        setTimeout(() => this._upd473_mu51c(), 250);
     }
 
     playFlap() {
@@ -78,6 +129,8 @@ class AudioManager {
 
     setVolume(value) {
         this.gainNode.gain.value = value;
+        this.b455_g41n.gain.setValueAtTime(value * 0.3, this.context.currentTime);
+        this.l34d_g41n.gain.setValueAtTime(value * 0.2, this.context.currentTime);
     }
 }
 
@@ -208,8 +261,9 @@ function updateGame() {
 
     // Score is updated automatically
 
-    // Update score
+    // Update score and expose it for procedural music
     score++;
+    window.score = score;
     if (score % 10 === 0) {  // Play every 10 points
         audio.playScore();
     }
