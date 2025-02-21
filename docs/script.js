@@ -335,9 +335,6 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.code === 'KeyP') {
         isPaused = !isPaused;
-        if (!isPaused) {
-            player.autoplay = true;  // Re-enable autoplay when unpausing manually
-        }
     }
 });
 
